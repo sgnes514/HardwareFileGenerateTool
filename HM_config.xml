@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data>
+  <CustomerName name="HM">
+    <FixedReplaceDText>
+      <Column>9</Column>
+    </FixedReplaceDText>
+    <ExcelFile name="MrlLabel">
+      <FileName>
+        <BaseName>Eval#(".\\base\\" + self.infodict["MRLMaterielNO."] + "_" + self.infodict["Customer"])#</BaseName>
+        <ResName>Eval#("\\" + self.infodict["ProjectNO."].replace("/","_")+ "_" + self.infodict["RBHWNR"] + "\\MRL_" + self.infodict["ProjectNO."].replace("/","_") + "_" + self.infodict["RBHWNR"] + "_V1.0")#</ResName>
+        <SheetName>Traceability Label requirement</SheetName>
+      </FileName>
+      <ConditionCheck>
+        <Condition>Eval#(True)#</Condition>
+        <Item>
+          <Row>2</Row>
+          <Column>4</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>System</FiledWith>
+          <DealWith>Replace#788#7.8.8</DealWith>
+        </Item>
+        <Item>
+          <Row>2</Row>
+          <Column>14</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>ProjectNO.</FiledWith>
+          <DealWith>None##</DealWith>
+        </Item>
+        <Item>
+          <Row>4</Row>
+          <Column>4</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>RBHWNR</FiledWith>
+          <DealWith>Replace#F01R00D#F 01R B0D </DealWith>
+        </Item>
+        <Item>
+          <Row>4</Row>
+          <Column>14</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>RBHWNR</FiledWith>
+          <DealWith>Replace#F01R00D#F 01R 00D </DealWith>
+        </Item>
+        <Item>
+          <Row>22</Row>
+          <Column>9</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>RBHWNR</FiledWith>
+          <DealWith>Replace#F01R00D#F 01R 00D </DealWith>
+        </Item>
+        <Item>
+          <Row>23</Row>
+          <Column>9</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>ECRNO.</FiledWith>
+          <DealWith>None##</DealWith>
+        </Item>
+        <Item>
+          <Row>24</Row>
+          <Column>9</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>RBHWNR</FiledWith>
+          <DealWith>Append# 0000#</DealWith>
+        </Item>
+        <Item>
+          <Row>26</Row>
+          <Column>9</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>System</FiledWith>
+          <DealWith>Eval#(self.infodict["System"][:len(self.infodict["System"])-2])#</DealWith>
+        </Item>
+        <Item>
+          <Row>28</Row>
+          <Column>9</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>ECU-NO.Customer</FiledWith>
+          <DealWith>None##</DealWith>
+        </Item>
+        <Item>
+          <Row>29</Row>
+          <Column>9</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>SupplierNO.</FiledWith>
+          <DealWith>None##</DealWith>
+        </Item>
+        <Item>
+          <Row>47</Row>
+          <Column>11</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>UserName##</DealWith>
+        </Item>
+        <Item>
+          <Row>47</Row>
+          <Column>14</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>Today##</DealWith>
+        </Item>
+      </ConditionCheck>
+    </ExcelFile>
+    <ExcelFile name="TlLabel">
+      <FileName>
+        <BaseName>Eval#(".\\base\\" + self.infodict["TLMaterielNO."] + "_" + self.infodict["Customer"])#</BaseName>
+        <ResName>Eval#("\\TL_" + self.infodict["ProjectNO."] + "_" + self.infodict["RBHWNR"] + "_V1.0")#</ResName>
+        <SheetName>Traceability Label requirement</SheetName>
+      </FileName>
+      <ConditionCheck>
+        <Condition>Eval#(len(self.infodict["TLMaterielNO."]) == 10)#</Condition>
+        <Item>
+          <Row>3</Row>
+          <Column>1</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>System</FiledWith>
+          <DealWith>None##</DealWith>
+        </Item>
+        <Item>
+          <Row>3</Row>
+          <Column>3</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>Customer</FiledWith>
+          <DealWith>None##</DealWith>
+        </Item>
+        <Item>
+          <Row>3</Row>
+          <Column>4</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>ProjectNO.</FiledWith>
+          <DealWith>None##</DealWith>
+        </Item>
+        <Item>
+          <Row>3</Row>
+          <Column>6</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>RBHWNR</FiledWith>
+          <DealWith>Replace#F01R00D#F 01R 00D </DealWith>
+        </Item>
+        <Item>
+          <Row>5</Row>
+          <Column>1</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>TLNO.</FiledWith>
+          <DealWith>Replace#F01R10D#F 01R 10D </DealWith>
+        </Item>
+        <Item>
+          <Row>5</Row>
+          <Column>4</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>TLMaterielNO.</FiledWith>
+          <DealWith>Replace#F01R10D#F 01R 10D </DealWith>
+        </Item>
+        <Item>
+          <Row>7</Row>
+          <Column>9</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>Today##</DealWith>
+        </Item>
+        <Item>
+          <Row>0</Row>
+          <Column>0</Column>
+          <Action>ReplaceCell</Action>
+          <FiledWith>RBHWNR</FiledWith>
+          <DealWith>Eval#0hwn#("0" + self.infodict["RBHWNR"][7:10])</DealWith>
+        </Item>
+        <Item>
+          <Row>0</Row>
+          <Column>0</Column>
+          <Action>ReplaceCell</Action>
+          <FiledWith>RBHWNR</FiledWith>
+          <DealWith>Eval#F 01R 00D hwn#(self.infodict["RBHWNR"].replace("F01R00D", "F 01R 00D "))</DealWith>
+        </Item>
+      </ConditionCheck>
+    </ExcelFile>
+    <ExcelFile name="Tech. Document Transfer File">
+      <FileName>
+        <BaseName>Eval#(u".\\base\\F-NE-008_Tech. Document Transfer List_V04")#</BaseName>
+        <ResName>Eval#("\\F-NE-008_Tech. Document Transfer List_V04_" + self.infodict["ProjectNO."] + "_" + self.infodict["RBHWNR"] + "_V1.0")#</ResName>
+        <SheetName>Tech. Document Transfer List</SheetName>
+      </FileName>
+      <ConditionCheck name="St File">
+        <Condition>Eval#(len(self.infodict["RBHWNR"]) == 10)#</Condition>
+        <Item>
+          <Row>5</Row>
+          <Column>2</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>Eval#("ST_" + self.infodict["RBHWNR"] + "_" + self.infodict["stVersion"] + ".doc")#</DealWith>
+        </Item>
+        <Item>
+          <Row>5</Row>
+          <Column>3</Column>
+          <Action>WriteCellRow</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>"ST"#"P+E"#"1"#"1"#"Y"</DealWith>
+        </Item>
+      </ConditionCheck>
+      <ConditionCheck name="Tl">
+        <Condition>Eval#(len(self.infodict["TLMaterielNO."]) == 10 and len(self.infodict["TLNO."]) == 10)#</Condition>
+        <Item>
+          <Row>6</Row>
+          <Column>2</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>Eval#("TL_" + self.infodict["TLNO."]  + "_001.xls")#</DealWith>
+        </Item>
+        <Item>
+          <Row>6</Row>
+          <Column>3</Column>
+          <Action>WriteCellRow</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>"Tl"#"P+E"#"1"#"1"#"</DealWith>
+        </Item>
+      </ConditionCheck>
+      <ConditionCheck name="pcba">
+        <Condition>Eval#(len(self.infodict["TransferPCBA"]) == 3 and len(self.infodict["PCBANO."]) == 10)#</Condition>
+        <Item>
+          <Row>7</Row>
+          <Column>2</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>Eval#("ST_" + self.infodict["PCBANO."]  + "_001.xls")#</DealWith>
+        </Item>
+        <Item>
+          <Row>7</Row>
+          <Column>3</Column>
+          <Action>WriteCellRow</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>"ST"#"P+E"#"1"#"1"#"Y"</DealWith>
+        </Item>
+      </ConditionCheck>
+      <ConditionCheck name="pav">
+        <Condition>Eval#(len(self.infodict["TransferPAV"]) == 3 and len(self.infodict["PAVNO."]) == 10)#</Condition>
+        <Item>
+          <Row>8</Row>
+          <Column>2</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>Eval#("PRV_" + self.infodict["PAVNO."]  + self.info["PAV-Version"] + "_001.xls")#</DealWith>
+        </Item>
+        <Item>
+          <Row>8</Row>
+          <Column>3</Column>
+          <Action>WriteCellRow</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>"PRV"#"P+E"</DealWith>
+        </Item>
+        <Item>
+          <Row>8</Row>
+          <Column>5</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>Eval#(self.info["PAV-Version"])#</DealWith>
+        </Item>
+        <Item>
+          <Row>8</Row>
+          <Column>6</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>"1"</DealWith>
+        </Item>
+      </ConditionCheck>
+      <ConditionCheck name="software">
+        <Condition>Eval#(len(self.infodict["RBSWNR"]) == 10 )#</Condition>
+        <Item>
+          <Row>11</Row>
+          <Column>2</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>Eval#(self.infodict["RBSWNR"]  + ".cnt")#</DealWith>
+        </Item>
+        <Item>
+          <Row>11</Row>
+          <Column>3</Column>
+          <Action>WriteCell</Action>
+          <FiledWith>None</FiledWith>
+          <DealWith>Eval#("Z:\\NE1\\EN13\\15. data exchange\\Series_Container\\" + self.infodict["System"]  + "\\" + self.infodict["ProjectNO."].replace("/", "_") + "\\" + self.infodict["SoftwareVersion"] + "_" + self.infodict["RBSWNR"])#</DealWith>
+        </Item>
+      </ConditionCheck>
+    </ExcelFile>
+    <WordFile name="Design Release Sheet File">
+      <FileName>
+        <BaseName>Eval#(u".\\base\\F-NE-183_DesignReleaseSheet_"+ self.infodict["Customer"] + "_" + self.infodict["System"])#</BaseName>
+        <ResName>Eval#("\\F-NE-183_DesignReleaseSheet_" + self.infodict["ProjectNO."] + "_" + self.infodict["RBHWNR"] + "_V1.0")#</ResName>
+      </FileName>
+      <ConditionCheck>
+        <Condition>Eval#(True)#</Condition>
+        <Item>
+          <ToBeReplaced>CUSTOMERNAME</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["Customer"])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>PROJECTNO</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["ProjectNO."])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>RBHWNRNO</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["RBHWNR"].replace("F01R00D","F 01R 00D "))#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>PRODUCTDES</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["ProductSpecific"])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>PROJECTDEVNO</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["DevelopmentNo."])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>RBSWNRNO</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["RBSWNR"].replace("F01R0AD","F 01R 0AD "))#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>PCBANO</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["PCBANO."].replace("F01R10D","F 01R 10D "))#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>PAVNO</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["PAVNO."].replace("F01RY0D","F 01R Y0D "))#</ReplacedWith>
+        </Item>
+      </ConditionCheck>
+      <ConditionCheck>
+        <Condition>Eval#(len(self.infodict["BasicTypeNO."]) == 4)#</Condition>
+        <Item>
+          <ToBeReplaced>BASETYPEEXIT</ToBeReplaced>
+          <ReplacedWith>Eval#(self.fixedRepList[2])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>BASETYPENOTEXIT</ToBeReplaced>
+          <ReplacedWith>Eval#(self.fixedRepList[3])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>BASENO</ToBeReplaced>
+          <ReplacedWith>Eval#(self.fixedRepList[0])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>BASECHANGE</ToBeReplaced>
+          <ReplacedWith>Eval#(self.fixedRepList[0])#</ReplacedWith>
+        </Item>
+      </ConditionCheck>
+      <ConditionCheck>
+        <Condition>Eval#(len(self.infodict["BasicTypeNO."]) == 10)#</Condition>
+        <Item>
+          <ToBeReplaced>BASETYPEEXIT</ToBeReplaced>
+          <ReplacedWith>Eval#(self.fixedRepList[0])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>BASETYPENOTEXIT</ToBeReplaced>
+          <ReplacedWith>Eval#(self.fixedRepList[1])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>BASENO</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["BasicTypeNO."])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>BASECHANGE</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["VariantFeatures"])#</ReplacedWith>
+        </Item>
+      </ConditionCheck>
+    </WordFile>
+    <WordFile name="St File">
+      <FileName>
+        <BaseName>Eval#(".\\base\\ST_"+ self.infodict["Customer"] + "_" + self.infodict["System"] + "_" + self.stTlfiled)#</BaseName>
+        <ResName>Eval#("\\ST_" + self.infodict["RBHWNR"] + "_V1.0")#</ResName>
+      </FileName>
+      <ConditionCheck>
+        <Condition>Eval#(True)#</Condition>
+        <Item>
+          <ToBeReplaced>RBHWRNNO</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["RBHWNR"].replace("F01R00D", "F 01R 00D "))#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>PROJECTCHARACTER</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["ProductSpecific"])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>F 01R 10DPCBA</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["PCBANO."].replace("F01R10D", "F 01R 10D "))#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>F 01R 00DHWNR</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["RBHWNR"].replace("F01R00D", "F 01R 00D "))#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>FIELD2DATA</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["RBHWNR"].replace("F01R00D", "F 01R 00D "))#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>FIELD3DATA</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["RBHWNR"]+" 0000")#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>FIELD7DATA</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["ECRNO."])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>ECRNUM2</ToBeReplaced>
+          <ReplacedWith>Eval#("ECR-"+self.infodict["ECRNO."])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>FIELD12DATA</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["System"][:len(self.infodict["System"])-2])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>FIELD14DATA</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["ECU-NO.Customer"])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>FIELD15DATA</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["SupplierNO."])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>F01R0ADRBSWN</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["RBSWNR"].replace("F01R0AD", "F 01R 0AD "))#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>ECRNUM2</ToBeReplaced>
+          <ReplacedWith>Eval#("ECR-" + self.infodict["ECRNO."])#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>PAVNO</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["PAVNO."].replace("F01RY0D", "F 01R Y0D "))#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>TLTYPE</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["TLMaterielNO."].replace("F01R10D", "F 01R 10D "))#</ReplacedWith>
+        </Item>
+        <Item>
+          <ToBeReplaced>TLNUM</ToBeReplaced>
+          <ReplacedWith>Eval#(self.infodict["TLNO."].replace("F01R10D", "F 01R 10D "))#</ReplacedWith>
+        </Item>
+      </ConditionCheck>
+    </WordFile>
+  </CustomerName>
+</data>
