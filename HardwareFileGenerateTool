@@ -1,0 +1,780 @@
+# -*- coding: utf-8 -*-
+
+from PyQt4 import QtGui, QtCore
+from win32com.client import Dispatch
+import sys, os,xlrd, shutil, getpass
+#from MrlBase import HmMrl, GacMrl
+#from TlBase import HmTl
+#import HmMrl
+from datetime import date, datetime
+import xml.etree.ElementTree as ET
+
+hwInfoListSheetName = u"dataBase"
+cntRootPath = "Z:\\NE1\\EN13\\15. data exchange\\Series_Container\\"
+rbhwnrKeyWord = "RBHWNR"
+projectNOKeyWord = "ProjectNO."
+projectDesKeyWord = u"ProductSpecific"
+ecuTypeKeyWord = u"System"
+customerKeyWord = u"Customer"
+TlTypeKeyWord = u"TLMaterielNO."
+TlNoKeyWord = u"TLNO."
+MrlTypeKeyWord = u"MRLMaterielNO."
+reqPcbaKeyWord = u"TransferPCBA"
+reqPavKeyWord = u"TransferPAV"
+baseNoKeyWord = u"BasicTypeNO."
+baseChaKeyWord = u"VariantFeatures"
+pcbaNoKeyWord = u"PCBANO."
+PavNOKeyWord = u"PAVNO."
+FtnrKeyWord = u"ECU-NO.Customer"
+supKeyWord = u"SupplierNO."
+proDevNOKeyWord = u"DevelopmentNo."
+rbswnrKeyWord = "RBSWNR"
+cntKeyWord = u"SoftwareVersion"
+pavVersionKeyWord = u"PAV-Version"
+ecrNOKeyWord      = u"ECRNO."
+ecuBrifeCodeKeyWord = u"ECU-brief-code"     #for gac TL
+baseTypeExist1 = u"是Yes , No."
+baseTypeNotExist = u"Yes ,"
+baseTypeNotExist1 = u"否 No."
+VailedDataColumn = 3
+
+
+FixedGacCusName = "GAC"
+FixedHmCusName  = "HM"
+FixedNone       = "NONE"
+FixedNOTL       = "NOTL"
+FixedWithTl     = "WithTl"
+
+class Dialog(QtGui.QDialog):
+
+
+    def __init__(self):
+        flags = QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowMaximizeButtonHint
+        super(Dialog, self).__init__()
+        Dialog.setWindowFlags(self, flags)
+        reload(sys)
+        sys.setdefaultencoding('utf-8')
+
+        self.createMenu()
+        self.createHorizontalGroupBox()
+        self.creatHorLayoutChoice()
+        self.createGridGroupBox()
+        #self.createFormGroupBox()
+        self.initValues()
+
+
+    def generateFile(self):
+        self.fileGenCount = 0
+        
+        
+        starttime = datetime.now()
+        res = self.getHwInfoByName(self.hwNumListBox.currentText(), self.hwNumListBox.currentIndex())
+        if res == -1:
+            return
+
+        dirname = (self.proNoName.replace("/", "_") + "_" +self.hwNoName)
+        if(os.path.exists(dirname)):
+            cmd = "RD /S /Q {0}".format(dirname)
+            os.system(cmd)
+
+        os.mkdir(dirname)
+        self.workPath = os.getcwd() + "\\" + self.proNoName.replace("/", "_")  + "_" +self.hwNoName
+        self.configFileTree = ET.parse(self.configFileName)
+        self.cus = self.configFileTree.getroot().getchildren()
+        self.getFixedRepText()
+        
+        
+        if(self.cus[0].attrib["name"] == self.cusName):
+            self.generateExcelFile()
+            return
+            self.generateMrlFile()
+            self.generateTlFile()
+            self.generateTechFile()
+        #if self.checkBoxMrlSel.isChecked():
+        #    self.generateMrlFile()
+
+        #if self.checkBoxTlSel.isChecked():
+        #    self.generateTlFile()
+        #return
+        #if self.checkBoxYjqdSel.isChecked():
+        #    self.generateTechFile()
+        if self.checkBoxStSel.isChecked():
+            self.generateStFile()
+        if self.checkBoxSjrkdSel.isChecked():    
+            self.generateSjrkdFile()
+        endtime = datetime.now()
+        
+        msgBox = QtGui.QMessageBox()
+        msgBox.setWindowTitle(u"提示")
+        msgBox.setText(u"文件生成完毕,共{1}个文件,耗时{0}秒".format((endtime - starttime).seconds, self.fileGenCount))
+        msgBox.exec_()
+        pass
+    def getFixedRepText(self):
+        fixedtextcol = self.cus[0].find("FixedReplaceDText").find("Column")
+        #self.fixedRepList.clear()
+        if(type(fixedtextcol) != type(None)):
+            
+            fc = int(fixedtextcol.text)
+            self.xlApp =Dispatch("Excel.Application")
+            self.xlApp.Visible = 0
+            str1 = self.dataBaseFileName
+            xlBook = self.xlApp.Workbooks.Open(str1)
+            sheet = xlBook.Sheets(2)
+            #j = 1
+            i = 2
+            ss = u""
+            #ss1 = u""
+            while(type(sheet.Cells(i, fc).Value) != type(None)):
+                ss = str(sheet.Cells(i, fc).Value)
+                if len(ss) > 0:
+                    #ss1 = str(sheet.Cells(i, j).Value)
+                    self.fixedRepList.append(ss)
+                    i = i+1
+            xlBook.Save()#As("test.xls")
+            self.xlApp.Quit()
+            
+        pass
+    def generateSjrkdFile(self):
+        if self.cusName == FixedHmCusName or self.cusName ==  FixedGacCusName:
+            self.updateSjrkdList()
+            #srcstr = u".\\base\\F-NE-183_设计认可单_"+ self.cusName + "_" + self.ecuTypeName + ".doc"
+            srcstr = self.getBaseFileName("DesignReleaseSheet") + ".doc"
+            dststr = u"" + self.workPath
+            dststr = dststr + u"\\F-NE-183_" + u"设计认可单_" + self.hwNoName+ "_001.doc"
+            shutil.copyfile(srcstr, dststr)
+            w = Dispatch('Word.Application') # w =
+
+            w.Visible = 0
+            w.DisplayAlerts = 0
+
+            doc = w.Documents.Open( FileName = dststr ) # worddoc = w.Documents.Add() # 创建新的文档
+
+            w.Selection.Find.ClearFormatting()
+            w.Selection.Find.Replacement.ClearFormatting()
+            for i in self.Sjrkdlist:
+                #w.Selection.Find.Execute(i, False, False, False, False, False, True, 1, True, self.Sjrkddict[i], -1)
+                w.Selection.Find.Execute(i, False, False, False, False, False, True, 1, False, self.Sjrkddict[i],2)
+            w.ActiveDocument.Sections(1).Headers(1).Range.Find.ClearFormatting()
+            w.ActiveDocument.Sections(1).Headers(1).Range.Find.Replacement.ClearFormatting()
+            for i in self.Sjrkdlist:
+                w.ActiveDocument.Sections(1).Headers(1).Range.Find.Execute(i,False, False, False, False, False, True, 1, False, self.Sjrkddict[i], 2)
+            doc.Close()
+            w.Quit()
+            self.fileGenCount = self.fileGenCount + 1
+
+        pass
+    def generateStFile(self):
+        if self.TLTypeName == FixedNone:
+            self.stTlfiled = FixedNOTL
+        else :
+            self.stTlfiled = FixedWithTl
+        srcstr = self.getBaseFileName("STFile") + ".doc"
+        dststr = self.workPath + "\\ST_" + self.hwNoName+ "_001.doc"
+        shutil.copyfile(srcstr, dststr)
+        for condition in self.cus[0].find("STFile").findall("ConditionCheck"):
+            con = condition.find("Condition").text.split("#")
+            if(len(con) == 3):
+                if eval(con[1]):
+                    for item in condition.findall("Item"):
+                        tobereplaced = item.find("ToBeReplaced").text
+                        replacewith = item.find("ReplacedWith").text
+                        if replacewith[:4] == "Eval":
+                            l = replacewith.split("#")
+                            rw = eval(l[1])
+                            self.stDict[tobereplaced] = rw
+                            pass
+                else:
+                    continue    
+            else:
+                return -1
+        w = Dispatch('Word.Application') # w =
+        w.Visible = 0
+        w.DisplayAlerts = 0
+        doc = w.Documents.Open( FileName = dststr ) # worddoc = w.Documents.Add() # 创建新的文档
+        w.Selection.Find.ClearFormatting()
+        w.Selection.Find.Replacement.ClearFormatting()
+        for i in self.stDict:
+            w.Selection.Find.Execute(i, False, False, False, False, False, True, 1, True, self.stDict[i], 2)
+
+        doc.Close()
+        #w.Documents.Close(wc.wdDoNotSaveChanges)
+        w.Quit()
+        self.fileGenCount = self.fileGenCount + 1
+        
+        
+   
+    def generateTechFile(self):
+        srcstr = self.getBaseFileName("TechFile")+".xls"
+        # + self.TLTypeName + "_" + self.cusName + "_" + self.ecuTypeName + ".xls"
+        dststr = self.workPath + srcstr[6:len(srcstr)-4] +"_" + self.proNoName.replace("/", "_") + "_" + self.hwNoName+ ".xls"
+        
+        try:
+            shutil.copyfile(srcstr, dststr)
+        except Exception as e:
+            print e
+        self.xlApp =Dispatch("Excel.Application")
+        self.xlApp.Visible = 0 # Check if any workbook exists.
+        xlBook = self.xlApp.Workbooks.Open(dststr)
+        sheet = xlBook.Sheets("Tech. Document Transfer List")
+
+        if("F01R00D" in self.hwNoName):
+            sheet.Cells(5, 2).Value = "ST_" + self.hwNoName + "_001.doc"
+            sheet.Cells(5, 3).Value = "ST"
+            sheet.Cells(5, 4).Value = "P+E"
+            sheet.Cells(5, 5).Value = "1"
+            sheet.Cells(5, 6).Value = "1"
+            sheet.Cells(5, 7).Value = "Y"
+        else:
+            msgBox = QtGui.QmessageBox()
+            msgBox.setText(u"请检查xls文件中硬件号")
+            msgBox.exec_()
+            return
+        if("F01R10D" in self.TLNoName and len(self.TLTypeName) == 10):
+            sheet.Cells(6, 2).Value = "TL_" + self.TLNoName + "_001.xls"
+            sheet.Cells(6, 3).Value = "TL"
+            sheet.Cells(6, 4).Value = "P+E"
+            sheet.Cells(6, 5).Value = "1"
+            sheet.Cells(6, 6).Value = "1"
+        if(self.PcbaReq == 1 and "F01R10D" in self.pcbaNoName):
+            sheet.Cells(7, 2).Value = "ST_" + self.pcbaNoName + "_001.xls"
+            sheet.Cells(7, 3).Value = "ST"
+            sheet.Cells(7, 4).Value = "P+E"
+            sheet.Cells(7, 5).Value = "1"
+            sheet.Cells(7, 6).Value = "1"
+            sheet.Cells(7, 7).Value = "Y"
+        if(self.PavReq == 1 and "F01RY0D" in self.PavNoName):
+            sheet.Cells(8, 2).Value = "PRV_" + self.PavNoName + "_" + self.pavVersion#
+            sheet.Cells(8, 3).Value = "PAV"
+            sheet.Cells(8, 4).Value = "P+E"
+            sheet.Cells(8, 5).Value = self.pavVersion
+            sheet.Cells(8, 6).Value = "1"
+        if("F01R0AD" in self.RbswnrName and len(self.cntName) >= 8):
+            sheet.Cells(11, 2).Value = self.cntName + ".cnt"
+            path = cntRootPath + self.ecuTypeName + "\\" + \
+            self.proNoName.replace("/", "_") + "\\" + self.cntName + "_" + self.RbswnrName
+            sheet.Cells(11, 3).Value = path
+        xlBook.Save()#As("test.xls")
+        self.xlApp.Quit()
+        self.fileGenCount = self.fileGenCount + 1
+        pass
+        pass
+    def generateExcelFile(self):
+        self.xlApp =Dispatch("Excel.Application")
+        self.xlApp.Visible = 0 # Check if any workbook exists.
+        for exl in self.cus[0].findall("ExcelFile"):
+            #ty = exl.attrib["name"]
+            #namelist = self.getFileName(ty)
+            basename = eval(exl.find("FileName").find("BaseName").text.split("#")[1]) + ".xls"
+            resname = self.workPath + eval(exl.find("FileName").find("ResName").text.split("#")[1]) + ".xls"
+            sheetname = exl.find("FileName").find("SheetName").text
+            shutil.copyfile(basename, resname)
+            self.xlBook = self.xlApp.Workbooks.Open(resname)
+            sheet = self.xlBook.Sheets(sheetname)
+            for con in exl.findall("ConditionCheck"):
+                condition = con.find("Condition").text
+                conl = condition.split("#")
+                if(len(conl) == 3):
+                    if eval(conl[1]):# condition correct
+                        for item in con.findall("Item"):
+                            rc = item.find("Row").text + ',' + item.find("Column").text
+                            action = item.find("Action").text
+                            filedwith = item.find("FiledWith").text
+                            dealwith = item.find("DealWith").text
+                            datatmp = self.calcInput(action, filedwith, dealwith)
+                            if datatmp != -1 :
+                                if action == "ReplaceCell" and rc == "0,0":
+                                    self.tlRepDict[datatmp[0]] = datatmp[1]
+                                    pass
+                                if action == "WriteCell":
+                                    self.tlWriteDict[rc] = datatmp
+                                    pass
+                                if action == "WriteCellRow":
+                                    dw = dealwith.split("#")
+                                    c = int(item.find("Column").text)
+                                    for i in range(len(dw)):
+                                        rc = item.find("Row").text + "," + str(c+i)
+                                        self.mrlWriteDict[rc] = dw[i]
+                                        pass
+                                    pass
+                            else:
+                                return -1
+                        pass
+                    else:# condition not correct
+                        continue
+                else:
+                    return -1
+            if len(self.tlWriteDict) > 1 :
+                for c in self.tlWriteDict:
+                    cr = c.split(",")
+                    sheet.Cells(int(cr[0]), int(cr[1])).Value = self.tlWriteDict[c]
+                pass
+            if len(self.tlRepDict) > 1:
+                for c in self.tlRepDict:
+                    sheet.Cells.Replace(c, self.tlRepDict[c])
+                pass    
+            self.xlBook.Save()#As("test.xls")
+        self.xlApp.Quit()
+        self.fileGenCount = self.fileGenCount + 1
+
+        return
+        
+        for item in self.cus[0].find("TlLabel").findall("Item"):
+            rc = item.find("Row").text + ',' + item.find("Column").text
+            action = item.find("Action").text
+            filedwith = item.find("FiledWith").text
+            dealwith = item.find("DealWith").text
+            datatmp = self.calcInput(action, filedwith, dealwith)
+            if datatmp != -1 :
+                if action == "ReplaceCell" and rc == "0,0":
+                    self.tlRepDict[datatmp[0]] = datatmp[1]
+                    pass
+                if action == "WriteCell":
+                    self.tlWriteDict[rc] = datatmp
+                    pass
+                
+            else:
+                return -1
+        self.xlApp =Dispatch("Excel.Application")
+        self.xlApp.Visible = 0 # Check if any workbook exists.
+        self.xlBook = self.xlApp.Workbooks.Open(dststr)
+        sheet = self.xlBook.Sheets("Traceability Label requirement")   
+        if len(self.tlWriteDict) > 1 :
+            for c in self.tlWriteDict:
+                cr = c.split(",")
+                sheet.Cells(int(cr[0]), int(cr[1])).Value = self.tlWriteDict[c]
+            pass
+        if len(self.tlRepDict) > 1:
+            for c in self.tlRepDict:
+                sheet.Cells.Replace(c, self.tlRepDict[c])
+            pass
+            pass
+        self.xlBook.Save()#As("test.xls")
+        self.xlApp.Quit()
+        self.fileGenCount = self.fileGenCount + 1
+        return 0
+        pass
+        
+        pass
+    def generateTlFile(self):
+        self.mrlBaseName = self.getBaseFileName("TlLabel")+".xls"
+        if(os.path.exists(self.mrlBaseName)):
+            pass 
+        else:    
+            return -1
+        dststr = self.workPath + "\\TL_" + self.proNoName.replace("/", "_") + "_" + self.hwNoName+ "_V1.0.xls"
+        shutil.copyfile(self.mrlBaseName, dststr)
+        
+        for item in self.cus[0].find("TlLabel").findall("Item"):
+            rc = item.find("Row").text + ',' + item.find("Column").text
+            action = item.find("Action").text
+            filedwith = item.find("FiledWith").text
+            dealwith = item.find("DealWith").text
+            datatmp = self.calcInput(action, filedwith, dealwith)
+            if datatmp != -1 :
+                if action == "ReplaceCell" and rc == "0,0":
+                    self.tlRepDict[datatmp[0]] = datatmp[1]
+                    pass
+                if action == "WriteCell":
+                    self.tlWriteDict[rc] = datatmp
+                    pass
+                
+            else:
+                return -1
+        self.xlApp =Dispatch("Excel.Application")
+        self.xlApp.Visible = 0 # Check if any workbook exists.
+        self.xlBook = self.xlApp.Workbooks.Open(dststr)
+        sheet = self.xlBook.Sheets("Traceability Label requirement")   
+        if len(self.tlWriteDict) > 1 :
+            for c in self.tlWriteDict:
+                cr = c.split(",")
+                sheet.Cells(int(cr[0]), int(cr[1])).Value = self.tlWriteDict[c]
+            pass
+        if len(self.tlRepDict) > 1:
+            for c in self.tlRepDict:
+                sheet.Cells.Replace(c, self.tlRepDict[c])
+            pass
+            pass
+        self.xlBook.Save()#As("test.xls")
+        self.xlApp.Quit()
+        self.fileGenCount = self.fileGenCount + 1
+        return 0
+        pass
+        
+        
+    def calcInput(self, action, filedwith, dealwith):
+        #action 
+            #WriteCellFromList    :从list中读取后写入到指定单元格
+            #ReplaceCell          :从list中获取后处理后替换单元格内容
+            #WriteNoList          :按照dealwith处理后写入单元格
+        #filedwith
+            #如果不是None,则从list里面查找
+            #如果是None,则按照dealwith中的命令获取字符,写入
+        #dealwith
+            #Today:   获取今天的日期
+            #Replace:dealwith中有三个字段,后两个字段是替换的参数,在list中查找filedwith的值,并替换后写入单元格
+            #None: 从list中查找filedwith的值不需处理,直接写入单元格
+            #Append:从list中查找filedwith的值作为字符串加上append后的下一个参数,写入单元格
+            #UserName:获取当前的用户名
+            #Mid:截取字符串
+            #说明:dealwith必须包含三个参数,每个以括号开始的参数会认为里面是一个函数 
+        argv = dealwith.split('#')
+        if argv[0] == "Today":
+            today = date.today()
+            beginday = date(1900, 1, 1)
+            tdays = abs(beginday - today)
+            generateDate = int(tdays.days + 2)
+            return generateDate
+            pass
+        if argv[0] == "UserName":
+            eceName = getpass.getuser()
+            if eceName[0:3] == "ext":
+                eceName = eceName[4:]
+            return eceName
+            pass
+        if argv[0] == "Replace":
+            if(len(argv) == 3):
+                tmp = self.infodict[filedwith].replace(argv[1], argv[2])
+                return tmp
+            pass
+
+        if argv[0] == "Append":
+            if(len(argv) == 3):
+                tmp = self.infodict[filedwith] + argv[1]
+                return tmp
+            pass
+
+            pass
+        if argv[0] == "Eval":
+            if(len(argv) == 3):
+                tmp = self.infodict[filedwith]
+                if len(argv[1]) > 0 and argv[1][0] == "(":
+                    argv[1] = eval(argv[1])
+                if len(argv[2]) > 0 and argv[2][0] == "(":
+                    argv[2] = eval(argv[2])
+                if action == "ReplaceCell":
+                    l = list()
+                    l.append(argv[1])
+                    l.append(argv[2])
+                    return l
+                if action == "WriteCell":
+                    if(len(argv[2]) > 0):
+                        return argv[2]
+                    else:
+                        return argv[1]
+                if action == "DefineVar":
+                    tmp = self.infodict[filedwith]
+                    if(len(argv[2]) > 0):
+                        return argv[2]
+                    else:
+                        return argv[1]
+            pass
+            pass
+        if argv[0] == "None":
+            tmp = self.infodict[filedwith]
+            return tmp
+            pass
+        pass
+    def getFileName(self, type):
+        tmp = self.cus[0].find(type).find("BaseName").text
+        c = tmp.split("#")
+        l = list()
+        l.append(eval(c[1]))
+        tmp = self.cus[0].find(type).find("ResName").text
+        c = tmp.split("#")
+        l.append(eval(c[1]))
+        return l
+        pass
+
+    def createMenu(self):
+        self.menuBar = QtGui.QMenuBar()
+
+        self.fileMenu = QtGui.QMenu("&File", self)
+        self.exitAction = self.fileMenu.addAction("E&xit")
+        self.menuBar.addMenu(self.fileMenu)
+        self.helpMenu = QtGui.QMenu("Help", self)
+        self.aboutAction = self.helpMenu.addAction("About")
+        self.menuBar.addMenu(self.helpMenu)
+
+        self.exitAction.triggered.connect(self.accept)
+        self.aboutAction.triggered.connect(self.showAboutMsg)
+
+    def creatHorLayoutChoice(self):
+        self.horizontalChliceBox = QtGui.QGroupBox(u"选择要生成的项目")
+        layout = QtGui.QHBoxLayout()
+        self.checkBoxAllSel = QtGui.QCheckBox(u"选择全部")
+        self.checkBoxMrlSel = QtGui.QCheckBox(u"MRL标签")
+        self.checkBoxTlSel = QtGui.QCheckBox(u"TL标签")
+        self.checkBoxStSel = QtGui.QCheckBox(u"ST总表")
+        self.checkBoxSjrkdSel = QtGui.QCheckBox(u"设计认可单")
+        self.checkBoxYjqdSel = QtGui.QCheckBox(u"移交清单")
+        layout.addWidget(self.checkBoxAllSel)
+        layout.addWidget(self.checkBoxMrlSel)
+        layout.addWidget(self.checkBoxTlSel)
+        layout.addWidget(self.checkBoxStSel)
+        layout.addWidget(self.checkBoxSjrkdSel)
+        layout.addWidget(self.checkBoxYjqdSel)
+        self.horizontalChliceBox.setLayout(layout)
+        
+        self.checkBoxAllSel.stateChanged.connect(self.selectAll)
+        pass
+    def selectAll(self):
+        self.checkBoxMrlSel.setCheckState(self.checkBoxAllSel.isChecked())
+        self.checkBoxTlSel.setCheckState(self.checkBoxAllSel.isChecked())
+        self.checkBoxStSel.setCheckState(self.checkBoxAllSel.isChecked())
+        self.checkBoxSjrkdSel.setCheckState(self.checkBoxAllSel.isChecked())
+        self.checkBoxYjqdSel.setCheckState(self.checkBoxAllSel.isChecked())
+        return
+        if self.checkBoxAllSel.isChecked():
+            self.checkBoxMrlSel.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.checkBoxMrlSel.setCheckState(QtCore.Qt.Unchecked)
+        pass
+
+    def createHorizontalGroupBox(self):
+        self.horizontalGroupBox = QtGui.QGroupBox(u"选择文件")
+        layout = QtGui.QHBoxLayout()
+
+        self.xlsFileEdit = QtGui.QLineEdit()
+        layout.addWidget(self.xlsFileEdit)
+        self.selXlsButton = QtGui.QPushButton(u"选择xls文件")
+        layout.addWidget(self.selXlsButton)
+        self.selXlsButton.clicked.connect(self.selXlsFile)
+        self.horizontalGroupBox.setLayout(layout)
+
+    def createGridGroupBox(self):
+        self.gridGroupBoxbad = QtGui.QGroupBox(u"文件生成")
+        layout = QtGui.QHBoxLayout()
+        label = QtGui.QLabel(u"选择硬件号")
+        layout.addWidget(label)
+        self.hwNumListBox = QtGui.QComboBox()
+        #self.hwNumListBox.setPlainText(u"")
+
+        layout.addWidget(self.hwNumListBox)#, 0, 2, 4, 1)
+        self.generateFileBut = QtGui.QPushButton(u"生成文件")
+        self.generateFileBut.clicked.connect(self.generateFile)
+
+        layout.addWidget(self.generateFileBut)
+        self.gridGroupBoxbad.setLayout(layout)
+
+
+    def getHwInfoByName(self, name, col): 
+        self.xlApp =Dispatch("Excel.Application")
+        self.xlApp.Visible = 0
+        str1 = self.dataBaseFileName
+        xlBook = self.xlApp.Workbooks.Open(str1)
+        sheet = xlBook.Sheets(1)
+        j = col+VailedDataColumn
+        i = 1
+        ss = ""
+        ss1 = ""
+        while(type(sheet.Cells(i, 1).Value) != type(None)):
+            ss = str(sheet.Cells(i, 1).Value)
+            if len(ss) > 0:
+                ss1 = str(sheet.Cells(i, j).Value)
+                self.infodict[ss] = ss1
+                i = i+1
+        xlBook.Save()#As("test.xls")
+        self.xlApp.Quit()
+        return self.copyValues()
+
+
+    def getHwnoItems(self):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setWindowTitle(u"提示")
+        msgBox.setText(u"请确保所有Excel 文件已经关闭,点击OK将关闭所有Excel 文件,可能会导致未保存文件的丢失!")
+        msgBox.exec_()
+        self.xlApp =Dispatch("Excel.Application")
+        self.xlApp.Visible = 0
+        str1 = self.dataBaseFileName
+        xlBook = self.xlApp.Workbooks.Open(str1)
+        sheet = xlBook.Sheets(1)
+        j = VailedDataColumn
+        i = 1
+        vant = QtCore.QVariant()
+        self.hwNumListBox.clear()
+        while(type(sheet.Cells(1, j).Value) != type(None)):
+            ss = sheet.Cells(1, j).Value
+            if len(ss) == 10:
+                self.hwNumListBox.insertItem(i, ss, vant) 
+                i = i+1
+                j = j +1
+
+        xlBook.Save()#As("test.xls")
+        self.xlApp.Quit()
+        pass
+
+    def selXlsFile(self):
+        filename = QtGui.QFileDialog.getOpenFileName(self, self.tr("sel xls file"),
+                                                     u"", self.tr("xlsx file(*.xlsx *.xlsm)"))
+
+        if(filename != ""):
+            self.dataBaseFileName = filename
+            self.xlsFileEdit.setText(filename)
+            #self.clearList()
+            self.getHwnoItems()
+
+        pass
+
+    def printErrorInfo(self,buff):
+        self.errorCount = self.errorCount + 1
+        buff1 = u"{0}. {1}".format(self.errorCount,buff)
+        self.errorEditor.append(buff1)
+    def printsuccessInfo(self,buff):
+
+        self.successCount = self.successCount + 1
+        buff1 = u"{0}. {1}".format(self.successCount,buff)
+        self.successEditor.append(buff1)
+
+    def open_excel(self,filename):
+        try:
+            data = xlrd.open_workbook(filename)
+            return data
+        except Exception as e:
+            print e
+    def copyValues(self):
+        if rbhwnrKeyWord in self.infodict:
+            self.hwNoName = self.infodict[rbhwnrKeyWord]
+        else:
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText("error 0001")
+            msgBox.exec_()
+            return
+        if projectNOKeyWord in self.infodict:
+            self.proNoName = self.infodict[projectNOKeyWord]
+        if projectDesKeyWord in self.infodict:
+            self.proDesName = self.infodict[projectDesKeyWord]
+        if ecuTypeKeyWord in self.infodict:
+            self.ecuTypeName = self.infodict[ecuTypeKeyWord]
+        if customerKeyWord in self.infodict:
+            self.cusName = self.infodict[customerKeyWord]
+            self.configFileName = self.cusName+"_config.xml"
+            if(os.path.exists(self.configFileName)):
+                pass
+            else:
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText("Not Support Customer Name\r\nPlease check the config file")
+                msgBox.exec_()
+                return -1
+                
+        if TlTypeKeyWord in self.infodict:
+            self.TLTypeName = self.infodict[TlTypeKeyWord]
+        if TlNoKeyWord in self.infodict:
+            self.TLNoName = self.infodict[TlNoKeyWord]
+        if MrlTypeKeyWord in self.infodict:
+            self.MRLTypeName = self.infodict[MrlTypeKeyWord]
+        if reqPcbaKeyWord in self.infodict:
+            if self.infodict[reqPcbaKeyWord] == "YES":
+                self.PcbaReq = 1
+            else:
+                self.PcbaReq = 0
+        if reqPavKeyWord in self.infodict:
+            if self.infodict[reqPavKeyWord] == "YES":
+                self.PavReq = 1
+            else:
+                self.PavReq = 0
+        if baseNoKeyWord in self.infodict:
+            self.baseNoname = self.infodict[baseNoKeyWord]
+        if baseChaKeyWord in self.infodict:
+            self.baseChange = self.infodict[baseChaKeyWord]
+        if pcbaNoKeyWord in self.infodict:
+            self.pcbaNoName = self.infodict[pcbaNoKeyWord]
+        if PavNOKeyWord in self.infodict:
+            self.PavNoName = self.infodict[PavNOKeyWord]
+        if FtnrKeyWord in self.infodict:
+            self.FtnrNoName = self.infodict[FtnrKeyWord]
+        if supKeyWord in self.infodict:
+            self.SupNoName = self.infodict[supKeyWord]
+        if proDevNOKeyWord in self.infodict:
+            self.DevNoName = self.infodict[proDevNOKeyWord]
+        if rbswnrKeyWord in self.infodict:
+            self.RbswnrName = self.infodict[rbswnrKeyWord]
+        if cntKeyWord in self.infodict:
+            self.cntName = self.infodict[cntKeyWord]
+        if pavVersionKeyWord in self.infodict:
+            self.pavVersion = self.infodict[pavVersionKeyWord]
+        if ecuBrifeCodeKeyWord in self.infodict:
+            self.ecuBrifeCode = self.infodict[ecuBrifeCodeKeyWord]
+        if ecrNOKeyWord in self.infodict:
+            self.ecrNO = self.infodict[ecrNOKeyWord]
+        return 0    
+        pass
+    def initValues(self):
+        
+
+
+        self.hwNoName = ""
+        self.proNoName = ""
+        self.proDesName = ""
+        self.ecuTypeName = ""
+        self.cusName = ""
+        self.TLTypeName = ""
+        self.TLNoName = ""
+        self.MRLTypeName = ""
+        self.PcbaReq = 1
+        self.PavReq = 1
+        self.baseNoname = ""
+        self.baseChange = ""
+        self.pcbaNoName = ""
+        self.PavNoName = ""
+        self.FtnrNoName = ""
+        self.SupNoName = ""
+        self.DevNoName = ""
+        self.RbswnrName = ""
+        self.cntName = ""
+        self.pavVersion = ""
+        self.ecuBrifeCode = ""
+        self.ecrNO = ""
+        self.fileGenCount = 0
+
+        self.infodict = dict()
+        self.stDict = dict()
+        self.Sjrkdlist = list()
+        self.Sjrkddict = dict()
+        self.mrlWriteDict = dict()
+        self.mrlRepDict = dict()
+        self.tlWriteDict = dict()
+        self.tlRepDict = dict()
+        self.fixedRepList = list()
+        self.workPath = os.getcwd()
+        un = getpass.getuser()
+        if un[0:3] == "ext":
+            self.username = un[4:]
+        #self.xlsFileEdit.returnPressed.connect(self.getHwnoItems)
+        mainLayout = QtGui.QVBoxLayout()
+        mainLayout.setMenuBar(self.menuBar)
+        mainLayout.addWidget(self.horizontalGroupBox)
+        #mainLayout.addWidget(self.horizontalChliceBox)
+        mainLayout.addWidget(self.gridGroupBoxbad)
+        #mainLayout.addWidget(self.gridGroupBoxsuccess)
+        self.setLayout(mainLayout)
+        
+        #filenamedefault = os.getcwd() + "\\list.xlsm"
+        #if(os.path.exists(filenamedefault)):
+        #    self.dataBaseFileName = filenamedefault
+        #    self.xlsFileEdit.setText(filenamedefault)
+        #    #self.clearList()
+        #    self.getHwnoItems()
+
+        self.checkBoxAllSel.setCheckState(QtCore.Qt.Checked)
+        self.setWindowTitle(u"硬件受控资料生成工具")
+        self.resize(700, 300)
+    def clearList(self):
+        pass
+    def showAboutMsg(self):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setWindowTitle(u"硬件受控资料生成工具")
+        msgBox.setText(u"\r\n\
+                               版本:V0.1\r\n\
+                               日期:2015-01-08\r\n\
+                               该工具用于生成移交受控资料.\r\n\
+                               目前该软件仅支持以下:\n\
+                               海马:ME788,ME1788\r\n\
+                               广汽:ME17881\r\n\
+                               如有问题请邮件反馈至NE1/ECE/Sun Guopeng。\r\n\
+                               ext.guopeng.sun@uaes.com")
+        msgBox.exec_()
+        pass
+
+app = QtGui.QApplication(sys.argv)
+dialog = Dialog()
+sys.exit(dialog.exec_())
